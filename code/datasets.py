@@ -273,7 +273,7 @@ class Datasets_builder:
             self.datasets['if_z'] = cf_datasets(if_z_data, config)
         if self.config.train_synthetic:
             synthetic_data_path = self.config.synthetic_data_path
-            self.synthetic_dataset_for_training = self.load_synthetic_data_for_training(synthetic_data_path) # 这里不能让它成为synthetic，目的是更改训练
+            self.synthetic_dataset_for_training = self.load_synthetic_data_for_training(synthetic_data_path)
             self.datasets['train'] = pd.concat([self.train_dataset, self.synthetic_dataset_for_training])
 
         if self.config.generate_synthetic:
@@ -348,140 +348,9 @@ class Datasets_builder:
     def generate_synthetic_data(self):
         if self.config.generate_synthetic_version == 'v0':
             return self.generate_synthetic_data_v0
-        elif self.config.generate_synthetic_version == 'v1':
-            return self.generate_synthetic_data_v1
-        elif self.config.generate_synthetic_version == 'v2':
-            return self.generate_synthetic_data_v2
-        elif self.config.generate_synthetic_version == 'v3':
-            return self.generate_synthetic_data_v3
-        elif self.config.generate_synthetic_version == 'v4':
-            return self.generate_synthetic_data_v4
         else:
             raise Exception('Generate synthetic data version not implemented')
     
-    def generate_synthetic_data_v1(self): 
-        generate_num = self.config.generate_num
-        # most_simple_generate_version 
-        if (generate_num !=0 ) and  (generate_num is not None):
-            test_item = self.datasets['test'].data.drop_duplicates(subset=['iid'])
-            test_item_ids = test_item['iid'].to_list()   
-            test_item_titles = test_item['title'].to_list()                   
-            valid_users = self.datasets['valid'].data['uid'].unique().tolist()
-
-            user_cnt = self.datasets['train'].data['uid'].value_counts()
-            warm_users = user_cnt[user_cnt>=10].index.unique().tolist()
-            train_data = self.datasets['train'].data # ['uid','iid','title', 'his', 'his_title','label']
-            warm_data = train_data[train_data['uid'].isin(warm_users)]
-            warm_data.sort_values(by = 'timestamp', ascending=False, inplace=True)
-            warm_data.drop_duplicates(subset=['uid'], inplace=True)
-            warm_data = warm_data[~warm_data['uid'].isin(valid_users)]
-            synthetic_interactions = []
-            np.random.seed(2024) # set random seed
-            sampled_data = warm_data.sample(n = int(generate_num))
-            for (id, title) in zip(test_item_ids, test_item_titles):
-                # sampled_data = warm_data.sample(n = int(generate_num))
-                sampled_data_copy = sampled_data.copy()
-                sampled_data_copy['iid'] = id        
-                sampled_data_copy['title'] = title  
-                synthetic_interactions.append(sampled_data_copy)       
-            synthetic_data = pd.concat(synthetic_interactions) # here for testing
-        return synthetic_data
-
-    def generate_synthetic_data_v2(self): # version 2,对于每个item，采样相同user，且user一定在valid set里出现过。
-        generate_num = self.config.generate_num
-        # most_simple_generate_version 
-        if (generate_num !=0 ) and  (generate_num is not None):
-            test_item = self.datasets['test'].data.drop_duplicates(subset=['iid'])
-            test_item_ids = test_item['iid'].to_list()   
-            test_item_titles = test_item['title'].to_list()                   
-
-            valid_users = self.datasets['valid'].data['uid'].unique().tolist()
-
-            user_cnt = self.datasets['train'].data['uid'].value_counts()
-            warm_users = user_cnt[user_cnt>=10].index.unique().tolist()
-            train_data = self.datasets['train'].data # ['uid','iid','title', 'his', 'his_title','label']
-            warm_data = train_data[train_data['uid'].isin(warm_users)]
-            warm_data.sort_values(by = 'timestamp', ascending=False, inplace=True)
-            warm_data.drop_duplicates(subset=['uid'], inplace=True)
-            warm_data = warm_data[warm_data['uid'].isin(valid_users)]
-            synthetic_interactions = []
-            if isinstance(self.config.generate_seed, int):
-                generate_seed = self.config.generate_seed
-            else:
-                generate_seed= 2024
-            np.random.seed(generate_seed) # set random seed
-            sampled_data = warm_data.sample(n = int(generate_num))
-            for (id, title) in zip(test_item_ids, test_item_titles):
-                # sampled_data = warm_data.sample(n = int(generate_num))
-                sampled_data_copy = sampled_data.copy()
-                sampled_data_copy['iid'] = id        
-                sampled_data_copy['title'] = title  
-                synthetic_interactions.append(sampled_data_copy)       
-            synthetic_data = pd.concat(synthetic_interactions) # here for testing
-        return synthetic_data
-
-    def generate_synthetic_data_v3(self): 
-        generate_num = self.config.generate_num
-        # most_simple_generate_version 
-        if (generate_num !=0 ) and  (generate_num is not None):
-            test_item = self.datasets['test'].data.drop_duplicates(subset=['iid'])
-            test_item_ids = test_item['iid'].to_list()   
-            test_item_titles = test_item['title'].to_list()                   
-
-            valid_users = self.datasets['valid'].data['uid'].unique().tolist()
-
-            user_cnt = self.datasets['train'].data['uid'].value_counts()
-            warm_users = user_cnt[user_cnt>=10].index.unique().tolist()
-            train_data = self.datasets['train'].data # ['uid','iid','title', 'his', 'his_title','label']
-            warm_data = train_data[train_data['uid'].isin(warm_users)]
-            warm_data.sort_values(by = 'timestamp', ascending=False, inplace=True)
-            warm_data.drop_duplicates(subset=['uid'], inplace=True)
-            warm_data = warm_data[~warm_data['uid'].isin(valid_users)]
-            synthetic_interactions = []
-            try:
-                np.random.seed(self.config.generate_seed) # set random seed
-            except:
-                np.random.seed(2024)
-            # sampled_data = warm_data.sample(n = int(generate_num))
-            for (id, title) in zip(test_item_ids, test_item_titles):
-                sampled_data_copy = warm_data.sample(n = int(generate_num))
-                sampled_data_copy['iid'] = id        
-                sampled_data_copy['title'] = title  
-                synthetic_interactions.append(sampled_data_copy)       
-            synthetic_data = pd.concat(synthetic_interactions) # here for testing
-        return synthetic_data
-
-    def generate_synthetic_data_v4(self): 
-        generate_num = self.config.generate_num
-        # most_simple_generate_version 
-        if (generate_num !=0 ) and  (generate_num is not None):
-            test_item = self.datasets['test'].data.drop_duplicates(subset=['iid'])
-            test_item_ids = test_item['iid'].to_list()   
-            test_item_titles = test_item['title'].to_list()                   
-
-            valid_users = self.datasets['valid'].data['uid'].unique().tolist()
-            user_cnt = self.datasets['train'].data['uid'].value_counts()
-            warm_users = user_cnt[user_cnt>=10].index.unique().tolist()
-            train_data = self.datasets['train'].data # ['uid','iid','title', 'his', 'his_title','label']
-            warm_data = train_data[train_data['uid'].isin(warm_users)]
-            warm_data.sort_values(by = 'timestamp', ascending=False, inplace=True)
-            warm_data.drop_duplicates(subset=['uid'], inplace=True)
-            warm_data = warm_data[warm_data['uid'].isin(valid_users)]
-            synthetic_interactions = []
-            if isinstance(self.config.generate_seed, int):
-                generate_seed = self.config.generate_seed
-            else:
-                generate_seed= 2024
-            for (id, title) in zip(test_item_ids, test_item_titles):
-                np.random.seed(generate_seed)
-                generate_seed += 1
-                # sampled_data = warm_data.sample(n = int(generate_num))
-                sampled_data_copy = warm_data.sample(n = int(generate_num))
-                sampled_data_copy['iid'] = id        
-                sampled_data_copy['title'] = title  
-                synthetic_interactions.append(sampled_data_copy)       
-            synthetic_data = pd.concat(synthetic_interactions) # here for testing
-        return synthetic_data
 
 
 
