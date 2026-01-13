@@ -1,6 +1,6 @@
 # Repository Overview
 
-This repository provides a comprehensive set of scripts and modules for training recommender systems, focusing on cold-start scenarios. It includes the implementation of  Progressive Influence Functions (PIF), along with a detailed data preprocessing pipeline. Below is a detailed overview of the repository's key functionalities and files.
+This repository includes the implementation of Progressive Influence Functions (PIF), along with a detailed data preprocessing pipeline. Below is a detailed overview of the repository's key functionalities and files.
 
 ---
 
