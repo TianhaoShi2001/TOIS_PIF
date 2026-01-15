@@ -1,6 +1,6 @@
 # Repository Overview
 
-This repository includes the implementation of Progressive Influence Functions (PIF), along with a detailed data preprocessing pipeline. Below is a detailed overview of the repository's key functionalities and files.
+This repository includes the implementation of Filtering LLM-Synthesized Data for Cold-Start Recommendation: A Progressive Influence Function Approach (PIF), along with a detailed data preprocessing pipeline. Below is a detailed overview of the repository's key functionalities and files.
 
 ---
 
